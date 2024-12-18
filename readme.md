@@ -29,12 +29,19 @@ I gained a solid understanding of using FastAPI to design APIs,includi
 
 2. **Quality Assurance (QA)**🔍🔬: 
 I have Raised Issues on the project are below:
+
 [Bug - Profile picture validation not present](https://github.com/vt325456/user_management/issues/5)
 When testing the APIs in Swagger URL , The create user API end point is creating users even when the profile_picture_url is not in an image format.
+
+[Bug - Dependency issues in Image Scanning with Vulnerabilities](https://github.com/vt325456/user_management/issues/3)
+While the docker scan step is being done the docker image push is failed due to vulnerabilities of High and Critical.
+
 [Bug - Email Verification without RoleBased approach](https://github.com/vt325456/user_management/issues/4)
 The verify_email API is using token to verify the email which is successful for every user who is an AUTHENTICATED user. This is not correct for the users who are ANONYMOUS or in higher positions.
+
 [Bug - Docker Build Failure](https://github.com/vt325456/user_management/issues/2)
 The Docker Build is failing because 
+
 [Bug - Mismatching Nickname](https://github.com/vt325456/user_management/issues/1)
 When we run the create user API the nickname that is given in the API request is not the same that is stored in the database.
 
