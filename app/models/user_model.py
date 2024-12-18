@@ -6,7 +6,8 @@ from sqlalchemy import (
     Column, String, Integer, DateTime, Boolean, func, Enum as SQLAlchemyEnum
 )
 from sqlalchemy.dialects.postgresql import UUID, ENUM
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.models.invitation_model import Invitation
 from app.database import Base
 
 class UserRole(Enum):
@@ -73,7 +74,7 @@ class User(Base):
     verification_token = Column(String, nullable=True)
     email_verified: Mapped[bool] = Column(Boolean, default=False, nullable=False)
     hashed_password: Mapped[str] = Column(String(255), nullable=False)
-
+    invitations_sent: Mapped[list["Invitation"]] = relationship("Invitation", back_populates="inviter", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         """Provides a readable representation of a user object."""
@@ -95,3 +96,5 @@ class User(Base):
         """Updates the professional status and logs the update time."""
         self.is_professional = status
         self.professional_status_updated_at = func.now()
+    
+    

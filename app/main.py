@@ -1,12 +1,13 @@
 from builtins import Exception
 from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import AsyncEngine
 from starlette.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware  # Import the CORSMiddleware
-from app.database import Database
+from app.database import Base, Database
 from app.dependencies import get_settings
-from app.routers import user_routes
+from app.routers import user_routes, invitation_routes
 from app.utils.api_description import getDescription
-from app.routers import qr_routes
+
 app = FastAPI(
     title="User Management",
     description=getDescription(),
@@ -33,12 +34,14 @@ app.add_middleware(
 async def startup_event():
     settings = get_settings()
     Database.initialize(settings.database_url, settings.debug)
+    engine: AsyncEngine = Database._engine
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 @app.exception_handler(Exception)
 async def exception_handler(request, exc):
     return JSONResponse(status_code=500, content={"message": "An unexpected error occurred."})
 
 app.include_router(user_routes.router)
-app.include_router(qr_routes.router)
-
+app.include_router(invitation_routes.router)
 
