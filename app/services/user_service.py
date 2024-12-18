@@ -63,7 +63,7 @@ class UserService:
             validated_data['hashed_password'] = hash_password(validated_data.pop('password'))
             new_user = User(**validated_data)
             if validated_data["nickname"]:
-                new_nickname = validated_data['nickname']
+                new_nickname = validated_data["nickname"]
             else:
                 new_nickname = generate_nickname()
                 while await cls.get_by_nickname(session, new_nickname):
