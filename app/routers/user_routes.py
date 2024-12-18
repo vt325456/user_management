@@ -19,9 +19,11 @@ Key Highlights:
 """
 
 from builtins import dict, int, len, str
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
+from app.models.user_model import UserRole
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Request, Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_current_user, get_db, get_email_service, require_role
@@ -33,6 +35,7 @@ from app.services.jwt_service import create_access_token
 from app.utils.link_generation import create_user_links, generate_pagination_links
 from app.dependencies import get_settings
 from app.services.email_service import EmailService
+from app.database import Database
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 settings = get_settings()
@@ -245,3 +248,26 @@ async def verify_email(user_id: UUID, token: str, db: AsyncSession = Depends(get
     if await UserService.verify_email_with_token(db, user_id, token):
         return {"message": "Email verified successfully"}
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired verification token")
+
+
+@router.get("/users-search/", tags = ["User Searching and Filtering"])
+async def search_users(
+    query: str = Query("", description="Search query for nickname or email."),
+    role: Optional[UserRole] = Query(None, description="Role to filter by."),
+    skip: int = Query(0, ge=0, description="Number of records to skip for pagination."),
+    limit: int = Query(10, gt=0, le=100, description="Number of records to return for pagination."),
+    session: AsyncSession = Depends(Database.get_session_factory),
+):
+    users = await UserService.user_search(session, query=query, role=role, skip=skip, limit=limit)
+    return users
+
+@router.get("/users-filter", tags = ["User Searching and Filtering"])
+async def filter_users(
+    account_status: Optional[bool] = Query(None, description="Account status (True for locked, False for active)."),
+    start_date: Optional[datetime] = Query(None, description="Filter users registered on or after this date."),
+    skip: int = Query(0, ge=0, description="Number of records to skip for pagination."),
+    limit: int = Query(10, gt=0, le=100, description="Number of records to return for pagination."),
+    session: AsyncSession = Depends(Database.get_session_factory),
+):
+    users = await UserService.filter_users(session,account_status=account_status,start_date=start_date,end_date=end_date,skip=skip,limit=limit,)
+    return users

@@ -5,7 +5,9 @@ from typing import Optional, Dict, List
 from pydantic import ValidationError
 from sqlalchemy import func, null, update, select
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.sql import or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
 from app.dependencies import get_email_service, get_settings
 from app.models.user_model import User
 from app.schemas.user_schemas import UserCreate, UserUpdate
@@ -15,6 +17,7 @@ from uuid import UUID
 from app.services.email_service import EmailService
 from app.models.user_model import UserRole
 import logging
+from app.database import Database
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -199,3 +202,38 @@ class UserService:
             await session.commit()
             return True
         return False
+    
+    @classmethod
+    async def user_search(cls,session: AsyncSession,query: str = "",role: Optional[UserRole] = None,skip: int = 0,limit: int = 10,) -> List[User]:
+        try:
+            
+            filters = []
+            
+            if query:
+                filters.append(or_(User.nickname.ilike(f"%{query}%"),User.email.ilike(f"%{query}%")))
+            if role:
+                filters.append(User.role == role)
+            query = select(User).where(*filters).offset(skip).limit(limit)
+            result = await session.execute(query)
+            return result.scalars().all()
+        except SQLAlchemyError as e:
+            logger.error(f"Error during user search: {e}")
+            return []
+    
+    @classmethod
+    async def filter_users(cls, session:AsyncSession,account_status: Optional[bool] = None,start_date: Optional[datetime] = None,skip: int = 0,limit: int = 10,) -> List[User]:
+        try:
+            filters = []
+
+            if account_status is not None:
+                filters.append(User.is_locked == account_status)
+
+            if start_date:
+                filters.append(User.created_at >= start_date)
+            query = select(User).where(and_(*filters)).offset(skip).limit(limit)
+            result = await session.execute(query)
+            return result.scalars().all()
+        except SQLAlchemyError as e:
+            logger.error(f"Error during user filtering: {e}")
+            return []
+        
