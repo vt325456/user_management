@@ -25,7 +25,6 @@ async def send_invitation(inviter_id: UUID, invitee_email: str, db: AsyncSession
         raise httpexec
     
     except Exception as e:
-        print("Error Traceback:", traceback.format_exc())
         raise HTTPException(status_code=400, detail=str(e))
     
 @router.get("/redirect/")
