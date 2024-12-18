@@ -166,3 +166,26 @@ async def delete_invitation(invitation_id: UUID, db: AsyncSession = Depends(Data
     
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error deleting invitation: {str(e)}")
+
+@router.post("/accept-invitation/")
+async def accept_invitation(invitee_email: str, db: AsyncSession = Depends(Database.get_session_factory)):
+    try:
+        # Get pending invitation
+        async with db() as session:
+            find_pending_query =select(Invitation).where(Invitation.invitee_email == invitee_email,Invitation.status == "pending")
+            result = await session.execute(find_pending_query)
+            invitation = result.scalars().first()
+
+        if not invitation:
+            raise HTTPException(status_code=404, detail="Invitation not found or may be accepted.")
+
+        async with db() as session:
+            mark_accepted_query =update(Invitation).where(Invitation.id == invitation.id).values(status="accepted")
+            await session.execute(mark_accepted_query)
+            await session.commit()
+
+        return {"message": "Invitation has been accepted successfully!"}
+
+    except Exception as e:
+        logging.error(f"Accepting Invitation Failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
