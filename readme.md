@@ -27,23 +27,23 @@ Welcome to the User Management System project - an epic open-source adventure cr
 1. **Feature Implementation**: I have selected features from the [given features list](features.md). I have worked on below features like [User Search and Filtering](https://github.com/vt325456/user_management/issues/9) and [QR Code Generation User Invites with Minio](https://github.com/vt325456/user_management/issues/6). 
 I gained a solid understanding of using FastAPI to design APIs,including how to handle requests, dependencies,and connect logic.Implementing RESTful endpoints that follow industry standards like BREAD and HATEOAS was another aspect of my work.I was able to manage asynchronous sessionsunderstand connection poolingand design and implement normalised relational database schemas using SQLAlchemy ORM.I gained experience in using Pydantic models for API input validation and response serialization,as well as advanced SQLAlchemy querying techniques including joins, filters, and pagination.Creating QR codes using the qrcode package,adding custom parameters, and safely encoding user data with base64 all helped me expand my skill set. I also solved difficult technical issues with database transaction management, base64 encoding, and matching SQLAlchemy models with Pydantic schemas. Debugging complicated issues and testing API functioning in a variety of scenarios—including simulating practical uses and incorrect input handling—improved my analytical skills. I have worked on the searching and filtering as well to learn more about these functionality implementations.
 
-2. **Quality Assurance (QA)**🔍🔬: 
-I have Raised Issues on the project are below:
+2. **Quality Assurance (QA)** 🔍🔬: 
+- I have Raised Issues on the project are below:
 
-[Bug - Profile picture validation not present](https://github.com/vt325456/user_management/issues/5)
-When testing the APIs in Swagger URL , The create user API end point is creating users even when the profile_picture_url is not in an image format.
+    - [Bug - Profile picture validation not present](https://github.com/vt325456/user_management/issues/5)
+    When testing the APIs in Swagger URL , The create user API end point is creating users even when the profile_picture_url is not in an image format.
 
-[Bug - Dependency issues in Image Scanning with Vulnerabilities](https://github.com/vt325456/user_management/issues/3)
-While the docker scan step is being done the docker image push is failed due to vulnerabilities of High and Critical.
+    - [Bug - Dependency issues in Image Scanning with Vulnerabilities](https://github.com/vt325456/user_management/issues/3)
+    While the docker scan step is being done the docker image push is failed due to vulnerabilities of High and Critical.
 
-[Bug - Email Verification without RoleBased approach](https://github.com/vt325456/user_management/issues/4)
-The verify_email API is using token to verify the email which is successful for every user who is an AUTHENTICATED user. This is not correct for the users who are ANONYMOUS or in higher positions.
+    - [Bug - Email Verification without RoleBased approach](https://github.com/vt325456/user_management/issues/4)
+    The verify_email API is using token to verify the email which is successful for every user who is an AUTHENTICATED user. This is not correct for the users who are ANONYMOUS or in higher positions.
 
-[Bug - Docker Build Failure](https://github.com/vt325456/user_management/issues/2)
-The Docker Build is failing because 
+    - [Bug - Docker Build Failure](https://github.com/vt325456/user_management/issues/2)
+    The Docker Build is failing because of missing attribute allow_downgrades on the DockerFile. 
 
-[Bug - Mismatching Nickname](https://github.com/vt325456/user_management/issues/1)
-When we run the create user API the nickname that is given in the API request is not the same that is stored in the database.
+    - [Bug - Mismatching Nickname](https://github.com/vt325456/user_management/issues/1)
+    When we run the create user API the nickname that is given in the API request is not the same that is stored in the database.
 
 
 3. **Test Coverage Improvement**: Reviewed the existing test suite. Created 10 additional tests to cover edge cases, error scenarios, and important functionalities related to your chosen feature. Increased the test coverage by adding new test cases for the features I have worked on. ✅🧪
