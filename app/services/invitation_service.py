@@ -36,7 +36,7 @@ async def generate_qr_code(inviter_id: UUID, invitee_email: str, db:AsyncSession
         
         encoded_nickname = base64.urlsafe_b64encode(inviter.nickname.encode()).decode()
         print("------------------reached1")
-        qr_code_url = f"{Settings.Config.redirect_url}/redirect/?inviter={encoded_nickname}"
+        qr_code_url = f"{Settings.Config.base_url}/redirect/?inviter={encoded_nickname}"
         print("------------------reached2")
         qr = qrcode.QRCode(version=1, box_size=size, border=5)
         qr.add_data(qr_code_url)
