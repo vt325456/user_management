@@ -6,6 +6,7 @@ from app.database import Database
 from app.dependencies import get_settings
 from app.routers import user_routes
 from app.utils.api_description import getDescription
+from app.routers import qr_routes
 app = FastAPI(
     title="User Management",
     description=getDescription(),
@@ -38,5 +39,6 @@ async def exception_handler(request, exc):
     return JSONResponse(status_code=500, content={"message": "An unexpected error occurred."})
 
 app.include_router(user_routes.router)
+app.include_router(qr_routes.router)
 
 
