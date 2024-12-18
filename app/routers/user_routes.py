@@ -269,5 +269,6 @@ async def filter_users(
     limit: int = Query(10, gt=0, le=100, description="Number of records to return for pagination."),
     session: AsyncSession = Depends(Database.get_session_factory),
 ):
-    users = await UserService.filter_users(session,account_status=account_status,start_date=start_date,end_date=end_date,skip=skip,limit=limit,)
+    users = await UserService.filter_users(session,account_status=account_status,start_date=start_date,skip=skip,limit=limit,)
     return users
+
