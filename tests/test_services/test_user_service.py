@@ -1,12 +1,15 @@
 from builtins import range
+from datetime import datetime, timedelta
 import pytest
 from sqlalchemy import select
+from fastapi.testclient import TestClient
 from app.dependencies import get_settings
 from app.models.user_model import User, UserRole
 from app.services.user_service import UserService
 from app.utils.nickname_gen import generate_nickname
 
 pytestmark = pytest.mark.asyncio
+
 
 # Test creating a user with valid data
 async def test_create_user_with_valid_data(db_session, email_service):
@@ -161,3 +164,104 @@ async def test_unlock_user_account(db_session, locked_user):
     assert unlocked, "The account should be unlocked"
     refreshed_user = await UserService.get_by_id(db_session, locked_user.id)
     assert not refreshed_user.is_locked, "The user should no longer be locked"
+
+@pytest.mark.asyncio
+async def test_filter_users_by_account_status(db_session, verified_user, email_service):
+    #Locking a user
+    max_login_attempts = get_settings().max_login_attempts
+    for _ in range(max_login_attempts):
+        await UserService.login_user(db_session, verified_user.email, "wrongpassword")
+    #Added two users for testing 
+    user_data1 = {
+        "nickname": generate_nickname(),
+        "email": "valid_user1@example.com",
+        "password": "ValidPassword123!",
+        "role": UserRole.ADMIN.name
+        }     
+    user_data2 = {
+        "nickname": generate_nickname(),
+        "email": "valid_user2@example.com",
+        "password": "ValidPassword123!",
+        "role": UserRole.ANONYMOUS.name
+    }
+
+    await UserService.create(db_session, user_data1, email_service)
+    await UserService.create(db_session, user_data2, email_service)
+
+    locked_users = await UserService.filter_users(db_session, account_status=True)
+    active_users = await UserService.filter_users(db_session, account_status=False)
+
+    assert len(locked_users) == 1
+    assert len(active_users) == 2
+    assert locked_users[0].email == verified_user.email
+
+@pytest.mark.asyncio
+async def test_filter_users_by_registration_date(db_session, email_service):
+    """
+    Test filtering users by registration date range.
+    """
+    user_data1 = {
+        "nickname": generate_nickname(),
+        "email": "valid_user1@example.com",
+        "password": "ValidPassword123!",
+        "role": UserRole.ADMIN.name,
+        "created_at": datetime.utcnow()
+        }
+    await UserService.create(db_session, user_data1, email_service)
+    start_date = datetime.utcnow() - timedelta(days=25)
+
+    users_in_date_range = await UserService.filter_users(
+        db_session, start_date=start_date
+    )
+
+    assert len(users_in_date_range) == 1
+    assert users_in_date_range[0].email == "valid_user1@example.com"
+
+@pytest.mark.asyncio
+async def test_filter_users_combined(db_session, email_service,verified_user):
+    """
+    Test filtering users by account status and registration date range.
+    """
+    user_data1 = {
+        "nickname": generate_nickname(),
+        "email": "valid_user1@example.com",
+        "password": "ValidPassword123!",
+        "role": UserRole.ADMIN.name,
+        "created_at": datetime.utcnow()
+        }
+    await UserService.create(db_session, user_data1, email_service)
+    #Locking a user
+    max_login_attempts = get_settings().max_login_attempts
+    for _ in range(max_login_attempts):
+        await UserService.login_user(db_session, verified_user.email, "wrongpassword")
+    start_date = datetime.utcnow() - timedelta(days=35)
+    locked_users = await UserService.filter_users(
+        db_session, account_status=True, start_date=start_date
+    )
+
+    assert len(locked_users) == 1
+    assert locked_users[0].email == verified_user.email
+    
+@pytest.mark.asyncio
+async def test_filter_users_pagination(db_session, verified_user,email_service):
+    """
+    Test pagination while filtering users.
+    """
+    #Active User
+    user_data1 = {
+        "nickname": generate_nickname(),
+        "email": "valid_user1@example.com",
+        "password": "ValidPassword123!",
+        "role": UserRole.ADMIN.name,
+        "created_at": datetime.utcnow()
+        }
+    await UserService.create(db_session, user_data1, email_service)
+    #Locked User
+    max_login_attempts = get_settings().max_login_attempts
+    for _ in range(max_login_attempts):
+        await UserService.login_user(db_session, verified_user.email, "wrongpassword")
+    users = await UserService.filter_users(db_session, skip=0, limit=2)
+    assert len(users) == 2
+    assert users[0].email == "valid_user1@example.com"
+    assert users[1].email == verified_user.email
+    
